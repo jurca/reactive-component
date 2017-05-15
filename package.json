@@ -1,0 +1,34 @@
+{
+  "name": "reactive-component",
+  "version": "0.0.0",
+  "description": "React-like web components",
+  "main": "Component.js",
+  "dependencies": {},
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "eslint": "^3.19.0",
+    "eslint-config-fbjs-opensource": "^1.0.0",
+    "eslint-plugin-babel": "^4.1.1",
+    "eslint-plugin-flowtype": "^2.32.1",
+    "eslint-plugin-react": "^7.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jurca/reactive-component.git"
+  },
+  "keywords": [
+    "react",
+    "web",
+    "components",
+    "component"
+  ],
+  "author": "Martin Jurča <mjurca@centrum.cz>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jurca/reactive-component/issues"
+  },
+  "homepage": "https://github.com/jurca/reactive-component#readme"
+}

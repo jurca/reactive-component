@@ -1,0 +1,15 @@
+{
+  "extends": "fbjs-opensource",
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2015
+  },
+  "plugins": [
+    "babel",
+    "flowtype",
+    "react"
+  ]
+}
