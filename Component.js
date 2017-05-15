@@ -89,7 +89,9 @@ export default class Component extends HTMLElement {
 
   componentWillReceiveProps(nextProps, nextData) {}
 
-  shouldComponentUpdate(nextProps, nextData) {}
+  shouldComponentUpdate(nextProps, nextData) {
+    return this._Component.props !== nextProps || this._Component.data !== nextData;
+  }
 
   componentWillUpdate(nextProps, nextData) {}
 
