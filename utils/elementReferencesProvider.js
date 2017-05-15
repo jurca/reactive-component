@@ -1,4 +1,4 @@
-import combineKeys from './compoundCacheKeys';
+import combineKeys from './compoundCacheKeys.js';
 
 const refProxies = new WeakMap();
 const refObjects = new WeakMap();
@@ -14,7 +14,7 @@ export default function elementReferencesProvider(component, uiRootProvider, cur
       get(target, propertyName) {
         const cacheKey = combineKeys(currentProps, currentData);
         if (!elementCache.has(cacheKey)) {
-          return elementCache.set(cacheKey, new Map());
+          elementCache.set(cacheKey, new Map());
         }
         const elements = elementCache.get(cacheKey);
         if (elements.has(propertyName)) {

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Leaf component demo</title>
+  </head>
+  <body>
+    <x-foo count="3" item-0="first" item-1="second" item-2="third" counter="0"></x-foo>
+    <script src="https://unpkg.com/systemjs@0.20.12/dist/system.js"></script>
+    <script>
+      System.config({
+        baseURL: './',
+        transpiler: 'plugin-babel',
+        meta: {
+          '*.js': {
+            babelOptions: {
+              es2015: false,
+            },
+          },
+        },
+        map: {
+          'plugin-babel': 'https://unpkg.com/systemjs-plugin-babel@0.0.21/plugin-babel.js',
+          'systemjs-babel-build': 'https://unpkg.com/systemjs-plugin-babel@0.0.21/systemjs-babel-browser.js',
+        }
+      })
+
+    </script>
+    <script>
+      Promise.all([
+        System.import('../LeafComponent.js'),
+        System.import('../DataSource.js'),
+      ]).then(([leafComponentModule, dataSourceModule]) => {
+        const LeafComponent = leafComponentModule.default;
+        const DataSource = dataSourceModule.default;
+
+        const dataSource = new DataSource({counter: 0});
+
+        class BaseComponent extends LeafComponent {
+          constructor(useShadowDom = true) {
+            super(dataSource, useShadowDom);
+          }
+        }
+
+        class XFoo extends BaseComponent {
+          static get is() { return 'x-foo'; }
+          static get observedAttributes() { return ['counter']; }
+
+          constructor() {
+            super();
+
+            this._onIncProp = this._onIncProp.bind(this);
+            this._onIncData = this._onIncData.bind(this);
+          }
+
+          render() {
+            console.log('x-foo is rendering');
+            const templatingFeature = 'template literals';
+            const items = [];
+            for (let i = 0, count = parseInt(this.props.count); i < count; i++) {
+              items.push(this.props[`item-${i}`]);
+            }
+
+            return `
+              <style>
+                :host {
+                  display: block;
+                }
+
+                code {
+                  font-weight: bold;
+                }
+              </style>
+              <p>
+                This is the <code>x-foo</code> component.
+              </p>
+              <p>
+               Thanks to ${templatingFeature}, templating is actually quite
+               similar to JSX.
+              </p>
+              <ul>
+                ${items.map(item => `
+                  <li>${item}</li>
+                `).join('')}
+              </ul>
+              <p>
+                The leaf component is not meant for composing with other
+                components due to how it handles its rendering, nor it is ideal
+                for very dynamic UI with lots of event handlers, but this still
+                can be done:
+              </p>
+              <p>
+                Prop (attribute) <code>counter</code>: ${this.props.counter},
+                data counter: ${this.data.counter}
+              </p>
+              <p>
+                <button id="incProp">Increment counter in attribute</button>
+                <button data-ref="incData">Increment counter in data</button>
+              </p>
+              <p>
+                There are two way the component may reference its children: by
+                adding the <code>id</code> attribute to them (use only with
+                components rendering to shadow DOM) or adding the
+                <code>data-ref</code> attribute to them.
+              </p>
+            `;
+          }
+
+          componentDidMount() {
+            console.log('x-foo mounted');
+            this._addEventListeners();
+          }
+
+          componentWillReceiveProps(nextProps, nextData) {
+            console.log('x-foo will receive props', nextProps, nextData);
+          }
+
+          shouldComponentUpdate(nextProps, nextData) {
+            console.log('should x-foo update?', nextProps, nextData);
+            return super.shouldComponentUpdate(nextProps, nextData);
+          }
+
+          componentWillUpdate(nextProps, nextData) {
+            console.log('x-foo will update', nextProps, nextData);
+            this._removeEventListeners();
+          }
+
+          componentDidUpdate(prevProps, prevData) {
+            console.log('x-foo has updated', prevProps, prevData);
+            this._addEventListeners();
+          }
+
+          componentDidUnmount() {
+            console.log('x-foo unmounted');
+            this._removeEventListeners();
+          }
+
+          _addEventListeners() {
+            this.elements.incProp.addEventListener('click', this._onIncProp);
+            this.elements.incData.addEventListener('click', this._onIncData);
+          }
+
+          _removeEventListeners() {
+            this.elements.incProp.removeEventListener('click', this._onIncProp);
+            this.elements.incData.removeEventListener('click', this._onIncData);
+          }
+
+          _onIncProp() {
+            const counter = parseInt(this.getAttribute('counter'));
+            this.setAttribute('counter', counter + 1);
+          }
+
+          _onIncData() {}
+        }
+
+        customElements.define(XFoo.is, XFoo);
+      })
+    </script>
+  </body>
+</html>

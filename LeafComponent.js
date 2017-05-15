@@ -1,5 +1,5 @@
-import Component from './Component';
-import elementReferencesProvider from './utils/elementReferencesProvider';
+import Component from './Component.js';
+import elementReferencesProvider from './utils/elementReferencesProvider.js';
 
 export default class LeafComponent extends Component {
   constructor(dataSource, useShadowDom = true) {

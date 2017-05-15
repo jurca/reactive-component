@@ -5,6 +5,10 @@ export default class Component extends HTMLElement {
     throw new TypeError('The id static property getter is abstract and must be overridden');
   }
 
+  static get observedAttributes() {
+    return [];
+  }
+
   constructor(dataSource, elementReferencesProvider, renderer, renderingRootProvider) {
     super();
 
@@ -20,12 +24,13 @@ export default class Component extends HTMLElement {
       data: null,
       dataFragments: null,
       elementReferencesProvider,
+      renderer,
       renderingRootProvider,
       dataChangeObserver: () => {
         this._Component.update(this._Component.props);
       },
       update(nextProps) {
-        const nextDataFragments = instance.getDataFragments();
+        const nextDataFragments = instance._Component.getDataFragments();
         const dataFragmentsChanged = nextDataFragments.some(
           (fragment, index) => fragment !== instance._Component.dataFragments[index],
         );
@@ -41,9 +46,12 @@ export default class Component extends HTMLElement {
         const prevData = instance._Component.data;
         instance._Component.props = nextProps;
         instance._Component.data = nextData;
-        const ui = this.render();
-        renderer(this, renderingRootProvider, ui);
+        instance._Component.render();
         instance.componentDidUpdate(prevProps, prevData);
+      },
+      render() {
+        const ui = instance.render();
+        renderer(instance, renderingRootProvider, ui);
       },
       getDataFragments() {
         const rawData = dataSource.getData();
@@ -100,6 +108,8 @@ export default class Component extends HTMLElement {
   componentDidUnmount() {}
 
   connectedCallback() {
+    this._Component.render();
+
     this.componentDidMount();
   }
 
