@@ -7,11 +7,16 @@ export default class LeafComponent extends Component {
 
     this._LeafComponent = {
       uiRoot: useShadowDom ? this.attachShadow({mode: 'open'}) : this,
+      lastUi: null,
     };
   }
 }
 
 function renderer(component, uiRootProvider, ui) {
+  if (ui === component._LeafComponent.lastUi) {
+    return;
+  }
+
   const uiRoot = uiRootProvider(component);
   if (typeof ui === 'string') {
     uiRoot.innerHTML = ui;
@@ -19,6 +24,7 @@ function renderer(component, uiRootProvider, ui) {
     uiRoot.innerHTML = '';
     uiRoot.appendChild(ui);
   }
+  component._LeafComponent.lastUi = ui;
 }
 
 function renderingRootProvider(component) {
