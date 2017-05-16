@@ -1,4 +1,4 @@
-import Component from './Component.js';
+import Component from './AbstractComponent.js';
 import elementReferencesProvider from './utils/elementReferencesProvider.js';
 
 export default class LeafComponent extends Component {

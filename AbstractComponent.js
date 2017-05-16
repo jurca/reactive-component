@@ -1,6 +1,6 @@
 const IDENTITY_FUNCTION = input => input;
 
-export default class Component extends HTMLElement {
+export default class AbstractComponent extends HTMLElement {
   static get is() {
     throw new TypeError('The id static property getter is abstract and must be overridden');
   }
