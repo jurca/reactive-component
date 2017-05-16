@@ -5,24 +5,20 @@ const refObjects = new WeakMap();
 
 export default function elementReferencesProvider(component, uiRootProvider, currentProps, currentData) {
   if (typeof Proxy !== 'undefined') {
-    if (refProxies.has(component)) {
-      return refProxies.get(component);
+    const cacheKey = combineKeys(component, currentProps, currentData);
+    if (refProxies.has(cacheKey)) {
+      return refProxies.get(cacheKey);
     }
 
-    const elementCache = new WeakMap();
+    const elementCache = new Map();
     const refProxy = new Proxy({}, {
       get(target, propertyName) {
-        const cacheKey = combineKeys(currentProps, currentData);
-        if (!elementCache.has(cacheKey)) {
-          elementCache.set(cacheKey, new Map());
-        }
-        const elements = elementCache.get(cacheKey);
-        if (elements.has(propertyName)) {
-          return elements.get(propertyName);
+        if (elementCache.has(propertyName)) {
+          return elementCache.get(propertyName);
         }
 
         const element = uiRootProvider(component).querySelector(`#${propertyName}, [data-ref="${propertyName}"]`);
-        elements.set(propertyName, element);
+        elementCache.set(propertyName, element);
         return element;
       },
     });
