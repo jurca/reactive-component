@@ -20,6 +20,7 @@ export default class AbstractComponent extends HTMLElement {
       props[attribute.name] = attribute.value;
     }
     this._Component = {
+      mounted: false,
       props,
       data: null,
       dataFragments: null,
@@ -108,17 +109,23 @@ export default class AbstractComponent extends HTMLElement {
   componentDidUnmount() {}
 
   connectedCallback() {
+    this._Component.mounted = true;
     this._Component.render();
 
     this.componentDidMount();
   }
 
   disconnectedCallback() {
+    this._Component.mounted = false;
     this._Component.dataSource.removeListener(this._Component.dataChangeObserver);
     this.componentDidUnmount();
   }
 
   attributeChangedCallback(attributeName, oldValue, newValue, namespace) {
+    if (!this._Component.mounted) {
+      return;
+    }
+
     const nextProps = {
       ...this._Component.props,
       [`${namespace ? `${namespace}:` : ''}${attributeName}`]: newValue,
