@@ -5,7 +5,10 @@
     <title>Leaf component demo</title>
   </head>
   <body>
-    <x-foo count="3" item-0="first" item-1="second" item-2="third" counter="0"></x-foo>
+    <x-foo count="3" item-0="first" item-1="second" item-2="third" counter="0">
+      <span slot="theFirstSlot">slotted</span>
+    </x-foo>
+    <x-bar></x-bar>
     <script src="https://unpkg.com/systemjs@0.20.12/dist/system.js"></script>
     <script>
       System.config({
@@ -102,6 +105,10 @@
                 components rendering to shadow DOM) or adding the
                 <code>data-ref</code> attribute to them.
               </p>
+              <p>
+                Child elements in the client DOM can be
+                <slot name="theFirstSlot"></slot> in the shadow DOM.
+              </p>
             `;
           }
 
@@ -149,10 +156,38 @@
             this.setAttribute('counter', counter + 1);
           }
 
-          _onIncData() {}
+          _onIncData() {
+            dataSource.setData({
+              counter: this.data.counter + 1
+            })
+          }
         }
 
         customElements.define(XFoo.is, XFoo);
+
+        class XBar extends BaseComponent {
+          static get is() { return 'x-bar'; }
+
+          constructor() {
+            super(false);
+          }
+
+          render() {
+            return `
+              <p>
+                This is the <code>x-bar</code> component.
+              </p>
+              <p>
+                Leaf components may opt to not use the shadow DOM if necessary,
+                but this means no CSS scoping, no <code>id</code> attributes on
+                elements (use the <code>data-ref</code>) attributes and no
+                slotting of child elements.
+              </p>
+            `;
+          }
+        }
+
+        customElements.define(XBar.is, XBar);
       })
     </script>
   </body>
