@@ -1,7 +1,7 @@
-import Component from './AbstractComponent.js';
+import AbstractComponent from './AbstractComponent.js';
 import elementReferencesProvider from './utils/elementReferencesProvider.js';
 
-export default class LeafComponent extends Component {
+export default class LeafComponent extends AbstractComponent {
   constructor(dataSource, useShadowDom = true) {
     super(dataSource, elementReferencesProvider, renderer, renderingRootProvider);
 
