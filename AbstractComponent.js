@@ -65,8 +65,6 @@ export default class AbstractComponent extends HTMLElement {
       },
     };
     dataSource.addListener(this._AbstractComponent.dataChangeObserver);
-    this._AbstractComponent.dataFragments = this._AbstractComponent.getDataFragments();
-    this._AbstractComponent.data = this._AbstractComponent.getData(this._AbstractComponent.dataFragments);
   }
 
   get props() {
@@ -109,6 +107,8 @@ export default class AbstractComponent extends HTMLElement {
   componentDidUnmount() {}
 
   connectedCallback() {
+    this._AbstractComponent.dataFragments = this._AbstractComponent.getDataFragments();
+    this._AbstractComponent.data = this._AbstractComponent.getData(this._AbstractComponent.dataFragments);
     this._AbstractComponent.mounted = true;
     this._AbstractComponent.render();
 
@@ -123,6 +123,7 @@ export default class AbstractComponent extends HTMLElement {
 
   attributeChangedCallback(attributeName, oldValue, newValue, namespace) {
     if (!this._AbstractComponent.mounted) {
+      this.props[`${namespace ? `${namespace}:` : ''}${attributeName}`] = newValue;
       return;
     }
 
