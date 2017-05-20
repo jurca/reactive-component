@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Leaf component demo</title>
+    <title>Component demo</title>
   </head>
   <body>
   <x-foo counter="0"></x-foo>
@@ -38,13 +38,12 @@
       },
     })
 
-  </script>
-  <script>
     window.process = {
       env: {},
       version: '7.4.0'
     };
-
+  </script>
+  <script>
     // preload some dependencies because SystemJS cannot handle some simultaneous imports correctly
     System.import('util').then(
       () => System.import('buffer')
@@ -53,11 +52,17 @@
     }).then(() => Promise.all([
       System.import('../Component.js'),
       System.import('../DataSource.js'),
-    ])).then(([componentModule, dataSourceModule]) => {
+      System.import('virtual-dom/h'),
+    ])).then(([componentModule, dataSourceModule, hyperscriptModule]) => {
       const Component = componentModule.default;
       const DataSource = dataSourceModule.default;
+      const h = hyperscriptModule;
 
-      const dataSource = new DataSource({counter: 0, clicked: false});
+      const dataSource = new DataSource({
+        counter: 0,
+        clicked: false,
+        counters: []
+      });
 
       class BaseComponent extends Component {
         constructor(useShadowDom = true) {
@@ -75,6 +80,7 @@
           this._onIncProp = this.onIncProp.bind(this);
           this._onIncData = this.onIncData.bind(this);
           this._onAlternativeClicked = this.onAlternativeClicked.bind(this);
+          this._onAddCounter = this.onAddCounter.bind(this);
         }
 
         render() {
@@ -114,6 +120,10 @@
               Alternative event handling:
               <button id="alternative">${this.data.clicked ? 'clicked!' : 'click me'}</button>
             </p>
+            <button id="addSubComponent">add another sub-component</button>
+            ${this.data.counters.map((counter, index) => `
+              <x-bar index="${index}"></x-bar>
+            `).join('')}
           `;
         }
 
@@ -122,6 +132,7 @@
           this.elements.incProp.addEventListener('click', this._onIncProp);
           this.elements.incData.addEventListener('click', this._onIncData);
           this.addEventListener('click', this._onAlternativeClicked);
+          this.addEventListener('click', this._onAddCounter);
         }
 
         componentWillReceiveProps(nextProps, nextData) {
@@ -146,11 +157,18 @@
           this.elements.onIncProp.removeEventListener('click', this._onIncProp);
           this.elements.onIncData.removeEventListener('click', this._onIncData);
           this.removeEventListener('click', this._onAlternativeClicked);
+          this.removeEventListener('click', this._onAddCounter);
         }
 
-        onIncProp() {}
+        onIncProp() {
+          this.setAttribute('counter', parseInt(this.props.counter) + 1);
+        }
 
-        onIncData() {}
+        onIncData() {
+          dataSource.setData(Object.assign({}, dataSource.getData(), {
+            counter: this.data.counter + 1
+          }));
+        }
 
         onAlternativeClicked(event) {
           const realTarget = event.path[0];
@@ -162,9 +180,104 @@
             clicked: true,
           }));
         }
+
+        onAddCounter(event) {
+          const realTarget = event.path[0];
+          if (realTarget !== this.elements.addSubComponent) {
+            return;
+          }
+
+          const counters = dataSource.getData().counters.slice();
+          counters.push({counter: 0});
+          dataSource.setData(Object.assign({}, dataSource.getData(), {
+            counters,
+          }));
+        }
       }
 
       customElements.define(XFoo.is, XFoo);
+
+      class XBar extends BaseComponent {
+        static get is() { return 'x-bar'; }
+        static get observedAttributes() { return ['index']; }
+
+        constructor() {
+          super();
+
+          this._onIncrement = this.onIncrement.bind(this);
+        }
+
+        get dataSelectors() {
+          return [
+            data => data.counters[parseInt(this.props.index)],
+          ];
+        }
+
+        render() {
+          console.log('x-bar is rendering');
+          return [
+            h('style', `
+              :host {
+                display: block;
+                margin: 8px 4px;
+                border: 1px solid black;
+              }
+
+              p {
+                margin: 0;
+                padding-bottom: 16px;
+              }
+
+              p:last-child {
+                padding-bottom: 0;
+              }
+            `),
+            h('p', ['This is the ', h('code', 'x-bar'), ' component.']),
+            h('p', [
+              'Counter: ',
+              this.data.counter,
+              ' ',
+              h('button', {onclick: this._onIncrement}, 'increment')
+            ])
+          ];
+        }
+
+        componentDidMount() {
+          console.log('x-bar mounted');
+        }
+
+        componentWillReceiveProps(nextProps, nextData) {
+          console.log('x-bar will receive props', nextProps, nextData);
+        }
+
+        shouldComponentUpdate(nextProps, nextData) {
+          console.log('should x-bar update?', nextProps, nextData);
+          return super.shouldComponentUpdate(nextProps, nextData);
+        }
+
+        componentWillUpdate(nextProps, nextData) {
+          console.log('x-bar will update', nextProps, nextData);
+        }
+
+        componentDidUpdate(prevProps, prevData) {
+          console.log('x-bar has updated', prevProps, prevData);
+        }
+
+        componentDidUnmount() {
+          console.log('x-bar unmounted');
+        }
+
+        onIncrement() {
+          const newCounter = {counter: this.data.counter + 1};
+          const newCounters = dataSource.getData().counters.slice();
+          newCounters.splice(parseInt(this.props.index), 1, newCounter);
+          dataSource.setData(Object.assign({}, dataSource.getData(), {
+            counters: newCounters,
+          }));
+        }
+      }
+
+      customElements.define(XBar.is, XBar);
     })
   </script>
   </body>
