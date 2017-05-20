@@ -1,7 +1,7 @@
 import html2hyperscript from 'html-to-hyperscript';
 import createElement from 'virtual-dom/create-element';
 import diff from 'virtual-dom/diff';
-import h from 'virtual-dom/h'; // eslint-disable-line no-unused-vars
+import h from 'virtual-dom/h';
 import patch from 'virtual-dom/patch';
 import AbstractComponent from './AbstractComponent.js';
 import elementReferencesProvider from './utils/elementReferencesProvider.js';
@@ -30,7 +30,7 @@ function renderer(component, uiRootProvider, ui) {
     const uiHs = html2hyperscript.htmlToHs({syntax: 'h'}, `<shadow-root>${ui}</shadow-root>`);
     uiVTree = eval(uiHs); // eslint-disable-line no-eval
   } else {
-    uiVTree = ui;
+    uiVTree = h('shadow-root', ui);
   }
 
   const uiRoot = uiRootProvider(component);
