@@ -4,20 +4,20 @@
   "description": "React-like web components",
   "main": "Component.js",
   "dependencies": {
-    "buffer": "^5.0.6",
-    "events": "^1.1.1",
     "html-to-hyperscript": "^0.8.0",
-    "stream-browserify": "^2.0.1",
-    "util": "^0.10.3",
     "virtual-dom": "^2.1.1"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
+    "buffer": "^5.0.6",
     "eslint": "^3.19.0",
+    "events": "^1.1.1",
     "eslint-config-fbjs-opensource": "^1.0.0",
     "eslint-plugin-babel": "^4.1.1",
     "eslint-plugin-flowtype": "^2.32.1",
-    "eslint-plugin-react": "^7.0.0"
+    "eslint-plugin-react": "^7.0.0",
+    "stream-browserify": "^2.0.1",
+    "util": "^0.10.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
