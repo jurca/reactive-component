@@ -6,6 +6,8 @@ import patch from 'virtual-dom/patch';
 import AbstractComponent from './AbstractComponent.js';
 import elementReferencesProvider from './utils/elementReferencesProvider.js';
 
+const htmlParser = html2hyperscript.htmlToHs({syntax: 'h'});
+
 export default class Component extends AbstractComponent {
   constructor(dataSource, useShadowDom = true) {
     super(dataSource, elementReferencesProvider, renderer, renderingRootProvider);
@@ -27,7 +29,7 @@ function renderer(component, uiRootProvider, ui) {
 
   let uiVTree;
   if (typeof ui === 'string') {
-    const uiHs = html2hyperscript.htmlToHs({syntax: 'h'}, `<shadow-root>${ui}</shadow-root>`);
+    const uiHs = htmlParser(`<shadow-root>${ui}</shadow-root>`);
     uiVTree = eval(uiHs); // eslint-disable-line no-eval
   } else {
     uiVTree = h('shadow-root', ui);
