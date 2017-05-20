@@ -19,7 +19,7 @@ export default class AbstractComponent extends HTMLElement {
       const attribute = attributes.item(i);
       props[attribute.name] = attribute.value;
     }
-    this._Component = {
+    this._AbstractComponent = {
       mounted: false,
       props,
       data: null,
@@ -28,14 +28,14 @@ export default class AbstractComponent extends HTMLElement {
       renderer,
       renderingRootProvider,
       dataChangeObserver: () => {
-        this._Component.update(this._Component.props);
+        this._AbstractComponent.update(this._AbstractComponent.props);
       },
       update(nextProps) {
-        const nextDataFragments = instance._Component.getDataFragments();
+        const nextDataFragments = instance._AbstractComponent.getDataFragments();
         const dataFragmentsChanged = nextDataFragments.some(
-          (fragment, index) => fragment !== instance._Component.dataFragments[index],
+          (fragment, index) => fragment !== instance._AbstractComponent.dataFragments[index],
         );
-        const privates = instance._Component;
+        const privates = instance._AbstractComponent;
         const nextData = dataFragmentsChanged ? privates.getData(nextDataFragments) : privates.data;
         instance.componentWillReceiveProps(nextProps, nextData);
 
@@ -43,11 +43,11 @@ export default class AbstractComponent extends HTMLElement {
           return;
         }
         instance.componentWillUpdate(nextProps, nextData);
-        const prevProps = instance._Component.props;
-        const prevData = instance._Component.data;
-        instance._Component.props = nextProps;
-        instance._Component.data = nextData;
-        instance._Component.render();
+        const prevProps = instance._AbstractComponent.props;
+        const prevData = instance._AbstractComponent.data;
+        instance._AbstractComponent.props = nextProps;
+        instance._AbstractComponent.data = nextData;
+        instance._AbstractComponent.render();
         instance.componentDidUpdate(prevProps, prevData);
       },
       render() {
@@ -64,25 +64,25 @@ export default class AbstractComponent extends HTMLElement {
         return Object.assign({}, ...dataFragments);
       },
     };
-    dataSource.addListener(this._Component.dataChangeObserver);
-    this._Component.dataFragments = this._Component.getDataFragments();
-    this._Component.data = this._Component.getData(this._Component.dataFragments);
+    dataSource.addListener(this._AbstractComponent.dataChangeObserver);
+    this._AbstractComponent.dataFragments = this._AbstractComponent.getDataFragments();
+    this._AbstractComponent.data = this._AbstractComponent.getData(this._AbstractComponent.dataFragments);
   }
 
   get props() {
-    return this._Component.props;
+    return this._AbstractComponent.props;
   }
 
   get data() {
-    return this._Component.data;
+    return this._AbstractComponent.data;
   }
 
   get elements() {
-    return this._Component.elementReferencesProvider(
+    return this._AbstractComponent.elementReferencesProvider(
       this,
-      this._Component.renderingRootProvider,
-      this._Component.props,
-      this._Component.data,
+      this._AbstractComponent.renderingRootProvider,
+      this._AbstractComponent.props,
+      this._AbstractComponent.data,
     );
   }
 
@@ -99,7 +99,7 @@ export default class AbstractComponent extends HTMLElement {
   componentWillReceiveProps(nextProps, nextData) {}
 
   shouldComponentUpdate(nextProps, nextData) {
-    return this._Component.props !== nextProps || this._Component.data !== nextData;
+    return this._AbstractComponent.props !== nextProps || this._AbstractComponent.data !== nextData;
   }
 
   componentWillUpdate(nextProps, nextData) {}
@@ -109,27 +109,27 @@ export default class AbstractComponent extends HTMLElement {
   componentDidUnmount() {}
 
   connectedCallback() {
-    this._Component.mounted = true;
-    this._Component.render();
+    this._AbstractComponent.mounted = true;
+    this._AbstractComponent.render();
 
     this.componentDidMount();
   }
 
   disconnectedCallback() {
-    this._Component.mounted = false;
-    this._Component.dataSource.removeListener(this._Component.dataChangeObserver);
+    this._AbstractComponent.mounted = false;
+    this._AbstractComponent.dataSource.removeListener(this._AbstractComponent.dataChangeObserver);
     this.componentDidUnmount();
   }
 
   attributeChangedCallback(attributeName, oldValue, newValue, namespace) {
-    if (!this._Component.mounted) {
+    if (!this._AbstractComponent.mounted) {
       return;
     }
 
     const nextProps = {
-      ...this._Component.props,
+      ...this._AbstractComponent.props,
       [`${namespace ? `${namespace}:` : ''}${attributeName}`]: newValue,
     };
-    this._Component.update(nextProps);
+    this._AbstractComponent.update(nextProps);
   }
 }
