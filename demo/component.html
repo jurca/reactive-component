@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Leaf component demo</title>
+  </head>
+  <body>
+  <x-foo counter="0"></x-foo>
+  <script src="https://unpkg.com/systemjs@0.20.12/dist/system.js"></script>
+  <script>
+    System.config({
+      baseURL: '../node_modules',
+      transpiler: 'plugin-babel',
+      meta: {
+        '*.js': {
+          babelOptions: {
+            es2015: false,
+          },
+        },
+      },
+      map: {
+        'plugin-babel': 'https://unpkg.com/systemjs-plugin-babel@0.0.21/plugin-babel.js',
+        'systemjs-babel-build': 'https://unpkg.com/systemjs-plugin-babel@0.0.21/systemjs-babel-browser.js',
+        'stream': 'stream-browserify',
+      },
+      packageConfigPaths: [
+        '../node_modules/*/package.json',
+      ],
+      packages: {
+        'parse5': {
+          map: {
+            './lib/parser': './lib/parser/index.js',
+            './lib/sax': './lib/sax/index.js',
+            './lib/serializer': './lib/serializer/index.js',
+            './lib/tokenizer': './lib/tokenizer/index.js',
+          },
+        },
+      },
+    })
+
+  </script>
+  <script>
+    window.process = {
+      env: {},
+      version: '7.4.0'
+    };
+
+    // preload some dependencies because SystemJS cannot handle some simultaneous imports correctly
+    System.import('util').then(
+      () => System.import('buffer')
+    ).then(bufferModule => {
+      window.Buffer = bufferModule.Buffer
+    }).then(() => Promise.all([
+      System.import('../Component.js'),
+      System.import('../DataSource.js'),
+    ])).then(([componentModule, dataSourceModule]) => {
+      const Component = componentModule.default;
+      const DataSource = dataSourceModule.default;
+
+      const dataSource = new DataSource({counter: 0, clicked: false});
+
+      class BaseComponent extends Component {
+        constructor(useShadowDom = true) {
+          super(dataSource, useShadowDom);
+        }
+      }
+
+      class XFoo extends BaseComponent {
+        static get is() { return 'x-foo'; }
+        static get observedAttributes() { return ['counter']; }
+
+        constructor() {
+          super();
+
+          this._onIncProp = this.onIncProp.bind(this);
+          this._onIncData = this.onIncData.bind(this);
+          this._onAlternativeClicked = this.onAlternativeClicked.bind(this);
+        }
+
+        render() {
+          console.log('x-foo is rendering');
+
+          return `
+            <style>
+              :host {
+                display: block;
+              }
+
+              p {
+                margin: 0;
+              }
+
+              p:not(:last-child) {
+                padding-bottom: 16px;
+              }
+            </style>
+            <p>
+              This is the <code>${this.constructor.is}</code> component.
+            </p>
+            <p>
+              The components extending from the <code>Component</code> class
+              use dom-diffing, which enables composing components while
+              ensuring their proper lifecycle and minimal patches to the DOM.
+            </p>
+            <p>
+              Counter from props: ${this.props.counter}
+              <button id="incProp">increment</button>
+            </p>
+            <p>
+              Counter from data: ${this.data.counter}
+              <button id="incData">increment</button>
+            </p>
+            <p>
+              Alternative event handling:
+              <button id="alternative">${this.data.clicked ? 'clicked!' : 'click me'}</button>
+            </p>
+          `;
+        }
+
+        componentDidMount() {
+          console.log('x-foo mounted');
+          this.elements.incProp.addEventListener('click', this._onIncProp);
+          this.elements.incData.addEventListener('click', this._onIncData);
+          this.addEventListener('click', this._onAlternativeClicked);
+        }
+
+        componentWillReceiveProps(nextProps, nextData) {
+          console.log('x-foo will receive props', nextProps, nextData);
+        }
+
+        shouldComponentUpdate(nextProps, nextData) {
+          console.log('should x-foo update?', nextProps, nextData);
+          return super.shouldComponentUpdate(nextProps, nextData);
+        }
+
+        componentWillUpdate(nextProps, nextData) {
+          console.log('x-foo will update', nextProps, nextData);
+        }
+
+        componentDidUpdate(prevProps, prevData) {
+          console.log('x-foo has updated', prevProps, prevData);
+        }
+
+        componentDidUnmount() {
+          console.log('x-foo unmounted');
+          this.elements.onIncProp.removeEventListener('click', this._onIncProp);
+          this.elements.onIncData.removeEventListener('click', this._onIncData);
+          this.removeEventListener('click', this._onAlternativeClicked);
+        }
+
+        onIncProp() {}
+
+        onIncData() {}
+
+        onAlternativeClicked(event) {
+          const realTarget = event.path[0];
+          if (realTarget !== this.elements.alternative) {
+            return;
+          }
+
+          dataSource.setData(Object.assign({}, dataSource.getData(), {
+            clicked: true,
+          }));
+        }
+      }
+
+      customElements.define(XFoo.is, XFoo);
+    })
+  </script>
+  </body>
+</html>
