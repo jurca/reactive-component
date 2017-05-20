@@ -46,6 +46,7 @@ export default class AbstractComponent extends HTMLElement {
         const prevProps = instance._AbstractComponent.props;
         const prevData = instance._AbstractComponent.data;
         instance._AbstractComponent.props = nextProps;
+        instance._AbstractComponent.dataFragments = nextDataFragments;
         instance._AbstractComponent.data = nextData;
         instance._AbstractComponent.render();
         instance.componentDidUpdate(prevProps, prevData);
