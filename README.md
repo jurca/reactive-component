@@ -51,3 +51,12 @@ There are some simplifications and differences in place though:
   technologies that this experiment builds upon. Don't expect IE support since
   there will never be a new IE version past 11, but
   [polyfilling might be possible](https://www.webcomponents.org/polyfills/).
+
+## Demo
+
+1. clone the repository
+2. run `npm i`
+3. use a webserver to serve the project directory (most linux distros may use
+   `python -m SimpleHTTPServer 8000` to run a python webserver on the 8000
+   port)
+4. open any of the HTML documents in the `demo` directory
