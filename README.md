@@ -6,9 +6,23 @@ based on the Web Components (v1) API?
 The point of this experiment is to create a base class for web components with
 as close-to-react as possible API and behavior.
 
+## Motivation
+
+The web components API has been described as a native alternative to libraries
+such as React, Angular and Polymer. The API itself, however, is pretty
+low-level and there are various nice features we (the web developers ) got used
+to that the web components API does not provide.
+
+This experiments explores these differences through an attempt to create a
+base class for a React-like web component, with rendering through describing
+the whole component's UI and using DOM-diffing, and following some of the
+patterns that got popular in the React community.
+
+## Differences from React
+
 There are some simplifications and differences in place though:
 
-* No component has internal state - this experiment follows the "one global
+* No component has an internal state - this experiment follows the "one global
   state" pattern introduced in [redux](http://redux.js.org/).
 * Props can only be strings - this is caused by the fact that attribute values
   are always strings. The [Polymer](https://www.polymer-project.org/) goes
@@ -44,6 +58,8 @@ There are some simplifications and differences in place though:
 * Full server-side rendering is possible only for components that do not use
   the shadow DOM, as there is no way to serialize shadow DOM into a static HTML
   markup (yet).
+* Higher-order components cannot be composed in the HTML without exposing them
+  in the markup.
 * Browser support: at the time of writing this, the modern browsers are
   implementing support for
   [web components](http://caniuse.com/#feat=custom-elementsv1) and
@@ -51,6 +67,22 @@ There are some simplifications and differences in place though:
   technologies that this experiment builds upon. Don't expect IE support since
   there will never be a new IE version past 11, but
   [polyfilling might be possible](https://www.webcomponents.org/polyfills/).
+* There is no "React Dev Tools" needed here. Since your components are custom
+  elements, it is clear where each component begins, and its props and can be
+  explored through the elements navigator (the Properties tab in Chrome).
+
+## "Polyfilling" the shadow DOM in HTML markup
+
+Currently, there is no way to specify shadow DOM in HTML markup. This, however,
+might be "polyfilled" using a custom element, e.g. `<shadow-dom>`.
+
+Such a component should slot all its children into its shadow DOM, and provide
+JS properties to render into its shadow DOM by the wrapping custom element
+using it.
+
+Another approach would be using the `<shadow-dom>` element as a simple marker
+of the part of the custom element's client DOM that should be considered its
+initial shadow DOM content.
 
 ## Demo
 
@@ -60,3 +92,19 @@ There are some simplifications and differences in place though:
    `python -m SimpleHTTPServer 8000` to run a python webserver on the 8000
    port)
 4. open any of the HTML documents in the `demo` directory
+
+## Conclusion
+
+While it is certainly possible to replace React/Angular/Polymer with native web
+components, having at least some "convenience layer" is handy. The web
+components have the potential to become a building block for libraries like
+these, but adding a native support for shadow DOM in the HTML markup might be
+needed to support proper server-side rendering.
+
+Adding some form of virtual DOM (with XML-like syntax and keys for nodes) to JS
+itself could be also helpful to support more declarative form of rendering. The
+client-side JS could also use a support for "smart" patching of existing DOM
+tree using either a virtual DOM tree or a detached DOM tree.
+
+All of this is, however, based on the assumption that a virtual DOM would be a
+longer-living concept than `Object.observe()` ever was.
